@@ -7,6 +7,7 @@ import {
   User,
   UserGreeting,
   UserName,
+  Icon,
 } from "./styles";
 
 const Dashboard: React.FC = () => {
@@ -25,6 +26,8 @@ const Dashboard: React.FC = () => {
               <UserName>Denis</UserName>
             </User>
           </UserInfo>
+
+          <Icon name="power" />
         </UserWrapper>
       </Header>
     </Container>
