@@ -1,4 +1,5 @@
-import React from "react";
+import React from 'react';
+
 import {
   Container,
   Header,
@@ -7,22 +8,49 @@ import {
   Footer,
   Amount,
   LastTransaction,
-} from "./styles";
+} from './styles';
 
-const HighlightCard: React.FC = () => {
+interface Props {
+  type: 'up' | 'down' | 'total';
+  title: string;
+  amount: string;
+  lastTransaction: string;
+}
+
+const icon = {
+  up: 'arrow-up-circle',
+  down: 'arrow-down-circle',
+  total: 'dollar-sign'
+}
+
+
+export function HighlightCard({
+  type,
+  title,
+  amount,
+  lastTransaction
+} : Props){
   return (
-    <Container>
+    <Container type={type}>
       <Header>
-        <Title>Entrada</Title>
-        <Icon name="arrow-up-circle" />
+        <Title type={type}>
+          {title}
+        </Title>
+        <Icon
+          name={icon[type]}
+          type={type}
+        />
       </Header>
 
       <Footer>
-        <Amount>R$ 0,00</Amount>
-        <LastTransaction></LastTransaction>
+        <Amount type={type}>
+          {amount}
+        </Amount>
+        <LastTransaction type={type}>
+          {lastTransaction}
+        </LastTransaction>
       </Footer>
-    </Container>
-  );
-};
 
-export default HighlightCard;
+    </Container>
+  )
+}
