@@ -3,6 +3,7 @@
     "name": "ignite-gofinances",
     "slug": "ignite-gofinances",
     "version": "1.0.0",
+    "schema": "ignite-gofinances",
     "assetBundlePatterns": [
       "**/*"
     ]

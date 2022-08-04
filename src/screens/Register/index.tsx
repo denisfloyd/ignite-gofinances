@@ -125,7 +125,6 @@ export function Register(){
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <Container>
-
         <Header>
           <Title>Cadastro</Title>
         </Header>
@@ -153,14 +152,14 @@ export function Register(){
               <TransactionTypeButton
                 type="up"
                 title="Income"
-                onPress={() => handleTransactionsTypeSelect('positive')}
-                isActive={transactionType === 'positive'}
+                onPress={() => handleTransactionsTypeSelect("positive")}
+                isActive={transactionType === "positive"}
               />
               <TransactionTypeButton
                 type="down"
                 title="Outcome"
-                onPress={() => handleTransactionsTypeSelect('negative')}
-                isActive={transactionType === 'negative'}
+                onPress={() => handleTransactionsTypeSelect("negative")}
+                isActive={transactionType === "negative"}
               />
             </TransactionsTypes>
 
@@ -172,18 +171,18 @@ export function Register(){
 
           <Button
             title="Enviar"
-            onPress={handleSubmit(handleRegister)}
+            onPress={handleSubmit(handleRegister as any)}
           />
         </Form>
 
         <Modal visible={categoryModalOpen}>
           <CategorySelect
-              category={category}
-              setCategory={setCategory}
-              closeSelectCategory={handleCloseSelectCategoryModal}
+            category={category}
+            setCategory={setCategory}
+            closeSelectCategory={handleCloseSelectCategoryModal}
           />
         </Modal>
       </Container>
-    </TouchableWithoutFeedback>      
+    </TouchableWithoutFeedback>
   );
 }
