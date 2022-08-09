@@ -1,17 +1,20 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import  { createStackNavigator } from '@react-navigation/stack';
+
 
 import { SignIn } from '../screens/SignIn';
 
-const { Navigator, Screen } = createStackNavigator();
+const stackRoutes = createStackNavigator();
 
-export function AuthRoutes(){
-  return(
-    <Navigator headerMode="none">
-      <Screen
-        name="SignIn"
-        component={SignIn}
-      />
-    </Navigator>
-  )
-}
+
+const AuthRoutes: React.FC = () => (
+    <stackRoutes.Navigator headerMode="none">
+        <stackRoutes.Screen 
+            name="SignIn"
+            component={SignIn}
+        />        
+    </stackRoutes.Navigator>
+)
+
+
+export default AuthRoutes;

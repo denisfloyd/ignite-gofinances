@@ -1,188 +1,181 @@
-import React, { useState } from 'react';
-import {
-  Modal,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Alert
-} from 'react-native';
-import * as Yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useCallback, useState } from 'react';
+import { useForm } from "react-hook-form";
+import { Alert, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+//https://www.npmjs.com/package/react-native-uuid
 import uuid from 'react-native-uuid';
 
-import { useForm } from 'react-hook-form';
 import { useNavigation } from '@react-navigation/native';
 
-import { InputForm } from '../../components/Form/InputForm';
-import { Button } from '../../components/Form/Button';
-import { TransactionTypeButton } from '../../components/Form/TransactionTypeButton';
-import { CategorySelectButton } from '../../components/Form/CategorySelectButton';
+import { useAuth } from '../../hooks/auth';
 
-import { CategorySelect } from '../CategorySelect';
+//https://www.npmjs.com/package/react-native-toast-message
+import Toast from 'react-native-toast-message';
+import { yupResolver } from '@hookform/resolvers/yup';
 
-import {
-  Container,
-  Header,
-  Title,
-  Form,
-  Fields,
-  TransactionsTypes
+import * as Yup from "yup";
+
+import { 
+    Container, 
+    Header,
+    HeaderTitle,
+    Form,
+    MovimentTypes,
+    Button,
+    ButtonText,
+    SelectCategory,
+    Category,
+    CategoryIcon
 } from './styles';
 
+
+import { InputForm } from '../../components/InputForm';
+import { MovimentTypeButton } from '../../components/MovimentTypeButton';
+import { CategorySelect, CategoryProps } from '../CategorySelect';
+
+
 interface FormData {
-  name: string;
-  amount: string;  
+    name: string;
+    amount: number;
 }
 
 const schema = Yup.object().shape({
-  name: Yup
-  .string()
-  .required('Nome é obrigatório'),
-  amount: Yup
-  .number()
-  .typeError('Informe um valor númerico')
-  .positive('O valor não pode ser negativo')
-  .required('O valor é obrigatório'),
+    name: Yup.string().required('Nome é obrigatório!'),
+    amount: Yup.number()
+    .typeError('Informe um valor númerico')
+    .positive('O valor não pode ser negativo')
+    .required('O valor é obrigatório')
 });
 
-export function Register(){
-  const [transactionType, setTransactionType] = useState('');
-  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  
-  const [category, setCategory] = useState({
-    key: 'category',
-    name: 'Categoria'
-  });
 
-  const navigation = useNavigation();
+export function Register(){  
+    const [moviment, setMoviment] = useState('');
+    const [category, setCategory] = useState<CategoryProps>({
+        label: 'Categoria',
+        value: 'category',
+        icon: 'any'
+    });
+    const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm({
-    resolver: yupResolver(schema)
-  });
-
-  function handleTransactionsTypeSelect(type: 'positive' | 'negative'){
-    setTransactionType(type);
-  }
-
-  function handleOpenSelectCategoryModal(){
-    setCategoryModalOpen(true);
-  }
-
-  function handleCloseSelectCategoryModal(){
-    setCategoryModalOpen(false);
-  }
-
-  async function handleRegister(form: FormData){
-    if(!transactionType)
-      return Alert.alert('Selecione o tipo da transação');
-
-    if(category.key === 'category')
-      return Alert.alert('Selecione a categoria');
+    const { user } = useAuth();
+    const navigation = useNavigation();
+    
+    const { control, handleSubmit, reset, formState: { errors } } = useForm({
+        resolver: yupResolver(schema)
+    });
 
 
-    const newTransaction = {
-      id: String(uuid.v4()),
-      name: form.name,
-      amount: form.amount,
-      type: transactionType,
-      category: category.key,
-      date: new Date()
-    }
+    const handleRegister = useCallback(async (data: FormData) => {        
+        if(!moviment)
+            return Alert.alert('Selecione o tipo do movimento!');
+        
+        if(category.label === 'Categoria')
+            return Alert.alert('Selecione a Categoria!');
 
-    try {
-      const dataKey = '@gofinances:transactions';
+        const newMoviment = {
+            id: String(uuid.v4()),
+            name: data.name,
+            amount: data.amount,
+            type: moviment,
+            category,
+            date: new Date()
+        }        
+        try {
+            const dataKey = `@gofinances_@user:${user.id}:moviments`;
+            const data = await AsyncStorage.getItem(dataKey);
+            const oldData = data ? JSON.parse(data) : []; 
 
-      const data = await AsyncStorage.getItem(dataKey);
-      const currentData = data ? JSON.parse(data) : [];
+            await AsyncStorage.setItem(dataKey, 
+            JSON.stringify([
+                newMoviment,
+                ...oldData
+             ]));
 
-      const dataFormatted = [
-        ...currentData,
-        newTransaction
-      ];
+             // reset form
+             reset();
+             setMoviment('');
 
-      await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
+             navigation.navigate('Listagem');
+             
+        } catch {
+            Alert.alert('Não foi possível cadastrar!')
+        }
 
-      reset();
-      setTransactionType('');
-      setCategory({
-        key: 'category',
-        name: 'Categoria'
-      });
+    },[category, moviment]);
 
-      navigation.navigate('Listagem');
-      
-    } catch (error) {
-      console.log(error);
-      Alert.alert("Não foi possível salvar");
-    }
-  }
+    const handleMovimentSelect = useCallback((value: string) => {
+        console.log(value)
+        setMoviment(value);
+    },[setCategory])
 
-  return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <Container>
-        <Header>
-          <Title>Cadastro</Title>
-        </Header>
 
-        <Form>
-          <Fields>
-            <InputForm
-              name="name"
-              control={control}
-              placeholder="Nome"
-              autoCapitalize="sentences"
-              autoCorrect={false}
-              error={errors.name && errors.name.message}
-            />
+    const handleSelectCategory = useCallback(() => {  
+        setCategoryModalOpen(true);
 
-            <InputForm
-              name="amount"
-              control={control}
-              placeholder="Preço"
-              keyboardType="numeric"
-              error={errors.amount && errors.amount.message}
-            />
+    },[setCategoryModalOpen])
 
-            <TransactionsTypes>
-              <TransactionTypeButton
-                type="up"
-                title="Income"
-                onPress={() => handleTransactionsTypeSelect("positive")}
-                isActive={transactionType === "positive"}
-              />
-              <TransactionTypeButton
-                type="down"
-                title="Outcome"
-                onPress={() => handleTransactionsTypeSelect("negative")}
-                isActive={transactionType === "negative"}
-              />
-            </TransactionsTypes>
 
-            <CategorySelectButton
-              title={category.name}
-              onPress={handleOpenSelectCategoryModal}
-            />
-          </Fields>
+    return (
+        <Container>
+            <Header>
+                <HeaderTitle>Cadastro</HeaderTitle>
+            </Header>
 
-          <Button
-            title="Enviar"
-            onPress={handleSubmit(handleRegister as any)}
-          />
-        </Form>
+            <Toast ref={(ref) => Toast.setRef(ref)} />
 
-        <Modal visible={categoryModalOpen}>
-          <CategorySelect
-            category={category}
-            setCategory={setCategory}
-            closeSelectCategory={handleCloseSelectCategoryModal}
-          />
-        </Modal>
-      </Container>
-    </TouchableWithoutFeedback>
-  );
+            <Form>                  
+                <InputForm                 
+                    control={control} 
+                    name="name"  
+                    placeholder="Nome" 
+                    autoCapitalize="sentences"
+                    autoCorrect={false}                  
+                    error={errors.name && errors.name.message}              
+                />
+                
+                <InputForm 
+                    keyboardType="numeric" 
+                    control={control} 
+                    name="amount"  
+                    placeholder="Preço" 
+                    autoCapitalize="sentences"
+                    autoCorrect={false}                                  
+                    error={errors.amount && errors.amount.message}              
+                />
+
+                <MovimentTypes>
+                    <MovimentTypeButton 
+                        type="up" 
+                        title="Entrada" 
+                        onPress={() => handleMovimentSelect('positive')} 
+                        isActive={moviment === 'positive'}
+                    />
+                    
+                    <MovimentTypeButton 
+                        type="down" 
+                        title="Saída" 
+                        onPress={() => handleMovimentSelect('negative')} 
+                        isActive={moviment === 'negative'}/>
+                </MovimentTypes>                
+
+                <SelectCategory onPress={handleSelectCategory}>
+                    <Category>{category.label}</Category>
+                    <CategoryIcon name="chevron-down" />
+                </SelectCategory>                    
+            </Form>
+
+            <Button onPress={handleSubmit(handleRegister)}>
+                <ButtonText>Enviar</ButtonText>
+            </Button>
+
+            <Modal visible={categoryModalOpen}>
+                <CategorySelect 
+                    category={category}
+                    setCategory={setCategory}
+                    setCategoryModalOpen={setCategoryModalOpen}
+                />
+            </Modal>
+        </Container>
+    )
 }

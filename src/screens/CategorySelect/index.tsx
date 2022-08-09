@@ -1,70 +1,63 @@
-import React from 'react';
-import { FlatList } from 'react-native-gesture-handler';
-
-import { Button } from '../../components/Form/Button';
-
+import React, { useState } from 'react';
+import { FlatList } from 'react-native';
 import { categories } from '../../utils/categories';
 
-import {
-  Container,
-  Header,
-  Title,
-  Category,
-  Icon,
-  Name,
-  Separator,
-  Footer,
+import { 
+    Container, 
+    Header,
+    HeaderTitle,
+    Item,
+    Label,
+    Separator,
+    Icon,
+    Button,
+    ButtonText
 } from './styles';
 
-interface Category {
-  key: string;
-  name: string;
+export interface CategoryProps {
+    label: string;
+    value: string;
+    icon: string;
 }
 
-interface Props {
-  category: Category;
-  setCategory: (category: Category) => void;
-  closeSelectCategory: () => void;
+interface CategorySelectProps {
+    category: CategoryProps;
+    setCategory: (item: CategoryProps) => void;
+    setCategoryModalOpen: (value: boolean) => void;
 }
 
-export function CategorySelect({
-  category,
-  setCategory,
-  closeSelectCategory
-} : Props ){
+export function CategorySelect({ 
+    category, 
+    setCategory, 
+    setCategoryModalOpen 
+} : CategorySelectProps){     
+    return (
+        <Container>
+            <Header>
+                <HeaderTitle>Categoria</HeaderTitle>
+            </Header>
 
-  function handleCategorySelect(category: Category){
-    setCategory(category);
-  }
+            <FlatList 
+                data={categories}
+                style={{ flex: 1, width: '100%' }}
+                keyExtractor={(item) => item.value}
+                renderItem={({item}) => (
+                    <Item 
+                        onPress={() => setCategory(item)}
+                        active={category.value === item.value}
+                    >
+                        <Icon name={item.icon}/>
+                        <Label>{item.label}</Label>
+                    </Item>
+                )}
+                ItemSeparatorComponent={() => (
+                    <Separator />
+                )}
+            />
 
-  return (
-    <Container>
-      <Header>
-        <Title>Categoria</Title>
-      </Header>
-
-      <FlatList
-        data={categories}
-        style={{ flex: 1, width: '100%'}}
-        keyExtractor={(item) => item.key}
-        renderItem={({ item }) => (
-          <Category
-            onPress={() => handleCategorySelect(item)}
-            isActive={category.key === item.key}
-          >
-            <Icon name={item.icon} />
-            <Name>{item.name}</Name>
-          </Category>
-        )}
-        ItemSeparatorComponent={() => <Separator />}
-      />
-
-      <Footer>
-        <Button
-          title="Selecionar"
-          onPress={closeSelectCategory}
-        />
-      </Footer>
-    </Container>
-  )
+            <Button onPress={() => setCategoryModalOpen(false)}>
+                <ButtonText>Selecionar</ButtonText>
+            </Button>
+        </Container>
+    )
 }
