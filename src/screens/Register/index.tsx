@@ -10,7 +10,6 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useAuth } from '../../hooks/auth';
 
-//https://www.npmjs.com/package/react-native-toast-message
 import Toast from 'react-native-toast-message';
 import { yupResolver } from '@hookform/resolvers/yup';
 

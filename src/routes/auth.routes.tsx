@@ -8,13 +8,10 @@ const stackRoutes = createStackNavigator();
 
 
 const AuthRoutes: React.FC = () => (
-    <stackRoutes.Navigator headerMode="none">
-        <stackRoutes.Screen 
-            name="SignIn"
-            component={SignIn}
-        />        
-    </stackRoutes.Navigator>
-)
+  <stackRoutes.Navigator screenOptions={{ headerShown: false }}>
+    <stackRoutes.Screen name="SignIn" component={SignIn} />
+  </stackRoutes.Navigator>
+);
 
 
 export default AuthRoutes;
